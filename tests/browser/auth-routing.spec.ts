@@ -1,4 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { config } from "dotenv";
+
+// Read the same env files as the dev server so local runs with keys keep this coverage.
+config({ path: [".env.local", ".env"], quiet: true });
+const clerkConfigured = Boolean(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY,
+);
 
 test("missing assets return 404 without invoking workspace authentication", async ({ request }) => {
   for (const path of [
@@ -19,6 +26,7 @@ test("missing assets return 404 without invoking workspace authentication", asyn
 test("Clerk's local rewrite does not proxy back into the development server", async ({
   request,
 }) => {
+  test.skip(!clerkConfigured, "Needs Clerk keys; without them /sign-in redirects to /setup.");
   const headers = {
     accept: "text/html",
     "user-agent": "Mozilla/5.0",
